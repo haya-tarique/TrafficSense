@@ -1,4 +1,3 @@
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,6 +5,7 @@ import joblib
 import altair as alt
 import shap
 from pathlib import Path
+
 
 # ============================================================
 # PAGE CONFIG
@@ -18,26 +18,21 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
 # ============================================================
-# PREMIUM DARK THEME
-# IMPORTANT: Keep this inside ONE st.markdown("""...""")
-# so Streamlit renders the CSS instead of showing it as text.
+# DARK THEME
 # ============================================================
 
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: Arial, sans-serif;
     }
 
     .stApp {
-        background:
-            radial-gradient(circle at 85% 5%, rgba(255, 83, 100, 0.10), transparent 26%),
-            radial-gradient(circle at 15% 80%, rgba(70, 110, 255, 0.06), transparent 30%),
-            #070b11;
+        background-color: #070b11;
         color: #f5f7fa;
     }
 
@@ -46,236 +41,43 @@ st.markdown(
         padding: 2rem 3rem 4rem 3rem;
     }
 
-    #MainMenu {
-        visibility: hidden;
-    }
-
-    footer {
-        visibility: hidden;
-    }
-
-    header {
-        background: transparent !important;
-    }
-
     section[data-testid="stSidebar"] {
-        background: #090e15;
+        background-color: #090e15;
         border-right: 1px solid #202833;
-    }
-
-    section[data-testid="stSidebar"] > div {
-        padding: 2rem 1.4rem;
-    }
-
-    .brand {
-        font-size: 29px;
-        font-weight: 800;
-        color: #ffffff;
-        letter-spacing: -1px;
-    }
-
-    .brand span {
-        color: #ff5364;
-    }
-
-    .brand-subtitle {
-        color: #718096;
-        font-size: 13px;
-        margin-top: 5px;
-        margin-bottom: 28px;
-    }
-
-    .nav-label {
-        color: #66758a;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        margin: 24px 0 10px 0;
-    }
-
-    div[data-testid="stRadio"] label {
-        color: #b7c0ce !important;
-        font-weight: 600;
-        border-radius: 10px;
-        padding: 8px 10px;
-    }
-
-    div[data-testid="stRadio"] label:hover {
-        background: #141b25;
-        color: #ffffff !important;
-    }
-
-    div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, #101722, #0b1018);
-        border: 1px solid #202a36;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #718096 !important;
-    }
-
-    div[data-testid="stMetricValue"] {
-        color: #ffffff !important;
-        font-weight: 800 !important;
-    }
-
-    div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: linear-gradient(145deg, rgba(18,25,35,0.96), rgba(9,14,21,0.96));
-        border: 1px solid #202a36;
-        border-radius: 18px;
     }
 
     .page-title {
         font-size: 40px;
         font-weight: 800;
-        color: #ffffff;
-        letter-spacing: -1.2px;
-        margin-bottom: 6px;
+        color: white;
+        margin-bottom: 5px;
     }
 
     .page-description {
-        color: #718096;
+        color: #8a96a8;
         font-size: 15px;
-        margin-bottom: 28px;
+        margin-bottom: 25px;
     }
 
     .section-title {
-        color: #ffffff;
         font-size: 22px;
-        font-weight: 750;
-        margin-top: 10px;
-        margin-bottom: 4px;
+        font-weight: 700;
+        color: white;
+        margin-top: 15px;
+        margin-bottom: 5px;
     }
 
     .section-subtitle {
-        color: #718096;
+        color: #8a96a8;
         font-size: 13px;
-        margin-bottom: 16px;
+        margin-bottom: 15px;
     }
 
-    .hero {
-        background: linear-gradient(135deg, #101722, #0b1018);
-        border: 1px solid #202a36;
-        border-radius: 20px;
-        padding: 28px 30px;
-        margin-bottom: 28px;
-    }
-
-    .hero-title {
-        color: #ffffff;
-        font-size: 24px;
-        font-weight: 800;
-        margin-bottom: 5px;
-    }
-
-    .hero-subtitle {
-        color: #718096;
-        font-size: 13px;
-    }
-
-    .status-online {
-        color: #45e0a3;
-        font-weight: 700;
-        font-size: 13px;
-    }
-
-    .feature-card {
-        background: #0e151f;
-        border: 1px solid #202a36;
-        border-radius: 14px;
-        padding: 18px;
-        min-height: 125px;
-    }
-
-    .feature-number {
-        color: #ff5364;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 1px;
-        margin-bottom: 12px;
-    }
-
-    .feature-name {
-        color: #aeb8c7;
-        font-size: 12px;
-        min-height: 34px;
-    }
-
-    .feature-value {
-        color: #ffffff;
-        font-size: 22px;
-        font-weight: 800;
-        margin-top: 8px;
-    }
-
-    .forecast-card {
-        background: linear-gradient(145deg, #111925, #0b1018);
-        border: 1px solid #242f3d;
-        border-radius: 20px;
-        padding: 28px;
-    }
-
-    .small-label {
-        color: #718096;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 1.5px;
-    }
-
-    .big-number {
-        color: #ffffff;
-        font-size: 52px;
-        font-weight: 800;
-        letter-spacing: -2px;
-        margin-top: 8px;
-    }
-
-    .info-card {
-        background: #0e151f;
-        border: 1px solid #202a36;
-        border-radius: 16px;
-        padding: 22px;
-    }
-
-    .info-label {
-        color: #718096;
-        font-size: 12px;
-        margin-bottom: 5px;
-    }
-
-    .info-value {
-        color: #ffffff;
-        font-size: 24px;
-        font-weight: 800;
-    }
-
-    .footer-custom {
-        text-align: center;
-        color: #4f5d70;
-        font-size: 12px;
-        padding: 45px 0 10px;
-    }
-
-    .stButton > button {
-        width: 100%;
-        background: #111925;
-        color: #d9e0ea;
-        border: 1px solid #263241;
-        border-radius: 10px;
-        font-weight: 600;
-    }
-
-    .stButton > button:hover {
-        border-color: #ff5364;
-        color: #ffffff;
-    }
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 # ============================================================
 # LOAD DATA
@@ -283,20 +85,22 @@ st.markdown(
 
 @st.cache_data
 def load_data():
+
     feature_file = Path("data/processed_features.npz")
 
     if not feature_file.exists():
         st.error(
-            "processed_features.npz was not found. "
-            "Run prepare_features.py first."
+            "data/processed_features.npz was not found."
         )
         st.stop()
 
-    with np.load(feature_file) as data:
-        X_train = data["X_train"]
-        y_train = data["y_train"]
-        X_test = data["X_test"]
-        y_test = data["y_test"]
+    data = np.load(feature_file)
+
+    X_train = data["X_train"]
+    y_train = data["y_train"]
+
+    X_test = data["X_test"]
+    y_test = data["y_test"]
 
     return X_train, y_train, X_test, y_test
 
@@ -307,11 +111,14 @@ def load_data():
 
 @st.cache_resource
 def load_model():
-    model_path = Path("models/xgboost_traffic_model.pkl")
+
+    model_path = Path(
+        "models/xgboost_traffic_model.pkl"
+    )
 
     if not model_path.exists():
         st.error(
-            "Model not found at models/xgboost_traffic_model.pkl"
+            "models/xgboost_traffic_model.pkl was not found."
         )
         st.stop()
 
@@ -319,55 +126,269 @@ def load_model():
 
 
 # ============================================================
-# CONGESTION CLASSIFICATION
-# ============================================================
-
-def classify_traffic(value):
-    if value < 0.1971:
-        return "LOW"
-    elif value < 0.4040:
-        return "MEDIUM"
-    return "HIGH"
-
-
-# ============================================================
-# INITIALIZE
+# LOAD
 # ============================================================
 
 X_train, y_train, X_test, y_test = load_data()
+
 model = load_model()
 
-predictions = np.asarray(model.predict(X_test))
+
+# ============================================================
+# FEATURE NAMES
+# ============================================================
 
 feature_names = [
     "Last Traffic Value",
     "Average Traffic",
-    "Traffic Variation",
-    "Minimum Traffic",
     "Maximum Traffic",
+    "Minimum Traffic",
+    "Traffic Variation",
 ]
+
+
+# ============================================================
+# PREPARE DATA FOR DASHBOARD
+# ============================================================
+
+def prepare_features(X):
+
+    """
+    Converts the available processed data into:
+
+        observations × nodes × 5 features
+
+    Supports both:
+
+        1. New format:
+           (observations * 36, 5)
+
+        2. Older format:
+           (observations, 36, 48)
+    """
+
+    X = np.asarray(X)
+
+    # --------------------------------------------------------
+    # CASE 1
+    # Already engineered:
+    # (observations * 36, 5)
+    # --------------------------------------------------------
+
+    if X.ndim == 2 and X.shape[1] == 5:
+
+        total_rows = X.shape[0]
+
+        if total_rows % 36 != 0:
+            raise ValueError(
+                "The number of rows in X is not divisible by 36 nodes."
+            )
+
+        observations = total_rows // 36
+
+        return X.reshape(
+            observations,
+            36,
+            5
+        )
+
+    # --------------------------------------------------------
+    # CASE 2
+    # Raw historical format:
+    # (observations, 36, 48)
+    # --------------------------------------------------------
+
+    if X.ndim == 3:
+
+        observations = X.shape[0]
+        nodes = X.shape[1]
+
+        if nodes != 36:
+            raise ValueError(
+                f"Expected 36 nodes but found {nodes}."
+            )
+
+        last_value = X[:, :, -1]
+
+        mean_value = X.mean(axis=2)
+
+        max_value = X.max(axis=2)
+
+        min_value = X.min(axis=2)
+
+        std_value = X.std(axis=2)
+
+        features = np.stack(
+            [
+                last_value,
+                mean_value,
+                max_value,
+                min_value,
+                std_value,
+            ],
+            axis=2,
+        )
+
+        return features
+
+    raise ValueError(
+        f"Unsupported X shape: {X.shape}"
+    )
+
+
+# Prepare test features
+
+X_test_nodes = prepare_features(X_test)
+
+
+# Prepare training features if possible
+
+try:
+
+    X_train_nodes = prepare_features(X_train)
+
+except Exception:
+
+    X_train_nodes = None
+
+
+# ============================================================
+# PREPARE TARGETS
+# ============================================================
+
+def prepare_targets(y):
+
+    """
+    Converts targets into:
+
+        observations × nodes
+    """
+
+    y = np.asarray(y)
+
+    # Already:
+    # observations × nodes
+
+    if y.ndim == 2:
+
+        if y.shape[1] == 36:
+            return y
+
+        if y.shape[0] == 36:
+            return y.T
+
+    # Flattened:
+    # observations * nodes
+
+    if y.ndim == 1:
+
+        if len(y) % 36 != 0:
+            raise ValueError(
+                "Target size is not divisible by 36."
+            )
+
+        return y.reshape(
+            -1,
+            36
+        )
+
+    raise ValueError(
+        f"Unsupported target shape: {y.shape}"
+    )
+
+
+y_test_nodes = prepare_targets(y_test)
+
+y_train_nodes = prepare_targets(y_train)
+
+
+# ============================================================
+# CHECK DATA CONSISTENCY
+# ============================================================
+
+number_of_observations = min(
+    X_test_nodes.shape[0],
+    y_test_nodes.shape[0],
+)
+
+number_of_nodes = 36
+
+
+# ============================================================
+# CONGESTION CLASSIFICATION
+# ============================================================
+
+def classify_traffic(value):
+
+    if value < 0.1971:
+        return "LOW"
+
+    elif value < 0.4040:
+        return "MEDIUM"
+
+    else:
+        return "HIGH"
+
+
+# ============================================================
+# PREDICT ONE NODE
+# ============================================================
+
+def predict_node(
+    observation_index,
+    node_index
+):
+
+    features = X_test_nodes[
+        observation_index,
+        node_index
+    ]
+
+    features_for_model = features.reshape(
+        1,
+        -1
+    )
+
+    prediction = float(
+        model.predict(
+            features_for_model
+        )[0]
+    )
+
+    actual = float(
+        y_test_nodes[
+            observation_index,
+            node_index
+        ]
+    )
+
+    return (
+        features,
+        prediction,
+        actual
+    )
+
 
 # ============================================================
 # SIDEBAR
 # ============================================================
 
 with st.sidebar:
+
     st.markdown(
-        '<div class="brand">Traffic<span>Sense</span></div>',
+        """
+        <h1 style="color:white;">
+        Traffic<span style="color:#ff5364;">Sense</span>
+        </h1>
+        """,
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        '<div class="brand-subtitle">AI-powered traffic intelligence</div>',
-        unsafe_allow_html=True,
+    st.caption(
+        "AI-powered traffic intelligence"
     )
 
-    st.markdown("---")
-
-    st.markdown(
-        '<div class="nav-label">NAVIGATION</div>',
-        unsafe_allow_html=True,
-    )
+    st.divider()
 
     page = st.radio(
         "Navigation",
@@ -378,55 +399,43 @@ with st.sidebar:
             "Model Insights",
             "About",
         ],
-        label_visibility="collapsed",
     )
 
-    st.markdown("---")
+    st.divider()
 
-    st.markdown(
-        '<div class="nav-label">SYSTEM STATUS</div>',
-        unsafe_allow_html=True,
+    st.subheader("System Status")
+
+    st.success(
+        "MODEL ONLINE"
     )
 
-    st.success("● MODEL ONLINE")
-    st.caption("XGBoost prediction engine is active")
+    st.caption(
+        "XGBoost prediction engine is active"
+    )
+
+    st.divider()
+
+    st.caption(
+        f"Traffic Nodes: {number_of_nodes}"
+    )
+
+    st.caption(
+        f"Test Observations: {number_of_observations:,}"
+    )
 
 
 # ============================================================
-# GLOBAL OBSERVATION
+# GLOBAL SELECTION
 # ============================================================
 
 if "global_observation" not in st.session_state:
+
     st.session_state.global_observation = 1
 
-observation = st.session_state.global_observation
-index = observation - 1
 
-selected_features = X_test[index].reshape(1, -1)
-prediction = float(model.predict(selected_features)[0])
-actual = float(y_test[index])
-difference = prediction - actual
-classification = classify_traffic(prediction)
+if "global_node" not in st.session_state:
 
-
-# ============================================================
-# TOP HEADER
-# ============================================================
-
-st.markdown(
-    """
-    <div class="hero">
-        <div class="hero-title">TrafficSense Intelligence Platform</div>
-        <div class="hero-subtitle">
-            Traffic forecasting · congestion analytics · model explainability
-        </div>
-        <div class="status-online" style="margin-top:12px;">
-            ● SYSTEM ONLINE
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    st.session_state.global_node = 1
 
 
 # ============================================================
@@ -436,121 +445,202 @@ st.markdown(
 if page == "Overview":
 
     st.markdown(
-        '<div class="page-title">Traffic intelligence at a glance</div>',
+        '<div class="page-title">'
+        'Traffic Intelligence at a Glance'
+        '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="page-description">'
-        'Monitor traffic conditions, model performance and congestion trends.'
+        'Monitor traffic conditions, congestion levels, '
+        'and machine-learning predictions.'
         '</div>',
         unsafe_allow_html=True,
     )
 
+    # --------------------------------------------------------
+    # MODEL METRICS
+    # --------------------------------------------------------
+
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        st.metric("R² SCORE", "84.37%", "Model performance")
+
+        st.metric(
+            "R² SCORE",
+            "84.37%"
+        )
 
     with c2:
-        st.metric("RMSE", "0.0809", "Prediction error")
+
+        st.metric(
+            "RMSE",
+            "0.0809"
+        )
 
     with c3:
-        st.metric("MAE", "0.0618", "Average error")
+
+        st.metric(
+            "MAE",
+            "0.0618"
+        )
 
     with c4:
-        st.metric("TEST OBSERVATIONS", f"{len(X_test):,}")
 
-    st.write("")
+        st.metric(
+            "TEST OBSERVATIONS",
+            f"{number_of_observations:,}"
+        )
 
-    left, right = st.columns([1.35, 1])
+    st.divider()
+
+    # --------------------------------------------------------
+    # CURRENT NODE
+    # --------------------------------------------------------
+
+    observation = (
+        st.session_state.global_observation
+    )
+
+    node = (
+        st.session_state.global_node
+    )
+
+    features, prediction, actual = predict_node(
+        observation - 1,
+        node - 1
+    )
+
+    classification = classify_traffic(
+        prediction
+    )
+
+    left, right = st.columns(2)
 
     with left:
-        with st.container(border=True):
-            st.subheader("Current traffic forecast")
 
-            st.caption(f"Observation #{observation:,}")
+        st.subheader(
+            "Current Traffic Forecast"
+        )
 
-            st.metric(
-                "Predicted intensity",
-                f"{prediction:.4f}",
+        st.caption(
+            f"Observation #{observation:,} "
+            f"• Node {node}"
+        )
+
+        st.metric(
+            "Predicted Traffic",
+            f"{prediction:.4f}"
+        )
+
+        if classification == "LOW":
+
+            st.success(
+                "🟢 LOW CONGESTION"
             )
 
-            if classification == "LOW":
-                st.success("🟢 LOW CONGESTION")
-            elif classification == "MEDIUM":
-                st.warning("🟡 MEDIUM CONGESTION")
-            else:
-                st.error("🔴 HIGH CONGESTION")
+        elif classification == "MEDIUM":
 
-            st.progress(min(max(prediction, 0.0), 1.0))
+            st.warning(
+                "🟡 MEDIUM CONGESTION"
+            )
 
-            a, b = st.columns(2)
+        else:
 
-            with a:
-                st.caption("Actual")
-                st.write(f"### {actual:.4f}")
+            st.error(
+                "🔴 HIGH CONGESTION"
+            )
 
-            with b:
-                st.caption("Prediction difference")
-                st.write(f"### {difference:+.4f}")
+        st.progress(
+            min(
+                max(prediction, 0.0),
+                1.0
+            )
+        )
 
     with right:
-        with st.container(border=True):
-            st.subheader("Traffic signals")
 
-            feature_df = pd.DataFrame(
-                {
-                    "Signal": feature_names,
-                    "Value": [
-                        round(float(x), 4)
-                        for x in selected_features[0][:5]
-                    ],
-                }
-            )
+        st.subheader(
+            "Traffic Signals"
+        )
 
-            st.dataframe(
-                feature_df,
-                hide_index=True,
-                use_container_width=True,
-            )
-
-    st.write("")
-
-    with st.container(border=True):
-        st.subheader("Traffic activity")
-
-        trend_size = min(500, len(y_test))
-
-        chart_df = pd.DataFrame(
+        signal_df = pd.DataFrame(
             {
-                "Observation": np.arange(1, trend_size + 1),
-                "Traffic": y_test[:trend_size],
+                "Feature": feature_names,
+                "Value": [
+                    round(float(v), 4)
+                    for v in features
+                ],
             }
         )
 
-        chart = (
-            alt.Chart(chart_df)
-            .mark_area(
-                line=True,
-                opacity=0.25,
-            )
-            .encode(
-                x=alt.X("Observation:Q", title="Observation"),
-                y=alt.Y("Traffic:Q", title="Traffic intensity"),
-                tooltip=[
-                    "Observation",
-                    alt.Tooltip("Traffic:Q", format=".4f"),
-                ],
-            )
-            .properties(height=350)
-            .interactive()
-        )
-
-        st.altair_chart(
-            chart,
+        st.dataframe(
+            signal_df,
+            hide_index=True,
             use_container_width=True,
         )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # TRAFFIC TREND
+    # --------------------------------------------------------
+
+    st.subheader(
+        "Traffic Activity"
+    )
+
+    trend_size = min(
+        500,
+        number_of_observations
+    )
+
+    trend_values = np.mean(
+        y_test_nodes[:trend_size],
+        axis=1
+    )
+
+    trend_df = pd.DataFrame(
+        {
+            "Observation": np.arange(
+                1,
+                trend_size + 1
+            ),
+            "Traffic": trend_values,
+        }
+    )
+
+    chart = (
+        alt.Chart(trend_df)
+        .mark_line()
+        .encode(
+            x=alt.X(
+                "Observation:Q",
+                title="Observation"
+            ),
+            y=alt.Y(
+                "Traffic:Q",
+                title="Average Traffic"
+            ),
+            tooltip=[
+                "Observation",
+                alt.Tooltip(
+                    "Traffic:Q",
+                    format=".4f"
+                ),
+            ],
+        )
+        .properties(
+            height=350
+        )
+        .interactive()
+    )
+
+    st.altair_chart(
+        chart,
+        use_container_width=True,
+    )
 
 
 # ============================================================
@@ -560,129 +650,298 @@ if page == "Overview":
 elif page == "Traffic Forecast":
 
     st.markdown(
-        '<div class="page-title">Traffic Forecast</div>',
+        '<div class="page-title">'
+        'Traffic Forecast'
+        '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="page-description">'
-        'Select an observation and generate an AI-powered traffic forecast.'
+        'Select a traffic observation and node to generate '
+        'an AI-powered traffic forecast.'
         '</div>',
         unsafe_allow_html=True,
     )
+
+    # --------------------------------------------------------
+    # OBSERVATION
+    # --------------------------------------------------------
 
     observation = st.slider(
-        "Select traffic observation",
+        "Select Traffic Observation",
         min_value=1,
-        max_value=len(X_test),
+        max_value=number_of_observations,
         value=st.session_state.global_observation,
-        key="forecast_slider",
+        key="forecast_observation",
     )
 
-    st.session_state.global_observation = observation
+    st.session_state.global_observation = (
+        observation
+    )
 
-    index = observation - 1
-    selected_features = X_test[index].reshape(1, -1)
-    prediction = float(model.predict(selected_features)[0])
-    actual = float(y_test[index])
-    difference = prediction - actual
-    classification = classify_traffic(prediction)
+    # --------------------------------------------------------
+    # NODE
+    # --------------------------------------------------------
 
-    left, right = st.columns([1.35, 1])
+    node = st.selectbox(
+        "Select Traffic Node / Location",
+        options=list(
+            range(1, number_of_nodes + 1)
+        ),
+        index=(
+            st.session_state.global_node - 1
+        ),
+        format_func=lambda x:
+            f"Node {x}",
+        key="forecast_node",
+    )
+
+    st.session_state.global_node = node
+
+    # --------------------------------------------------------
+    # GET PREDICTION
+    # --------------------------------------------------------
+
+    features, prediction, actual = predict_node(
+        observation - 1,
+        node - 1
+    )
+
+    difference = (
+        prediction - actual
+    )
+
+    classification = classify_traffic(
+        prediction
+    )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # FORECAST RESULT
+    # --------------------------------------------------------
+
+    left, right = st.columns(
+        [1.3, 1]
+    )
 
     with left:
-        with st.container(border=True):
-            st.markdown(
-                '<div class="small-label">PREDICTED TRAFFIC INTENSITY</div>',
-                unsafe_allow_html=True,
+
+        st.subheader(
+            "Predicted Traffic Intensity"
+        )
+
+        st.metric(
+            "Prediction",
+            f"{prediction:.4f}"
+        )
+
+        if classification == "LOW":
+
+            st.success(
+                "🟢 LOW CONGESTION — "
+                "Traffic is relatively clear."
             )
 
-            st.markdown(
-                f'<div class="big-number">{prediction:.4f}</div>',
-                unsafe_allow_html=True,
+        elif classification == "MEDIUM":
+
+            st.warning(
+                "🟡 MEDIUM CONGESTION — "
+                "Moderate congestion expected."
             )
 
-            if classification == "LOW":
-                st.success("🟢 LOW CONGESTION — Traffic is relatively clear.")
-            elif classification == "MEDIUM":
-                st.warning("🟡 MEDIUM CONGESTION — Moderate congestion expected.")
-            else:
-                st.error("🔴 HIGH CONGESTION — Heavy congestion expected.")
+        else:
 
-            st.progress(min(max(prediction, 0.0), 1.0))
+            st.error(
+                "🔴 HIGH CONGESTION — "
+                "Heavy congestion expected."
+            )
+
+        st.progress(
+            min(
+                max(prediction, 0.0),
+                1.0
+            )
+        )
 
     with right:
-        with st.container(border=True):
-            st.subheader("Prediction analysis")
 
-            c1, c2 = st.columns(2)
+        st.subheader(
+            "Prediction Analysis"
+        )
 
-            with c1:
-                st.metric("PREDICTED", f"{prediction:.4f}")
+        a, b = st.columns(2)
 
-            with c2:
-                st.metric("ACTUAL", f"{actual:.4f}")
-
-            st.divider()
+        with a:
 
             st.metric(
-                "ABSOLUTE ERROR",
-                f"{abs(difference):.4f}",
+                "Predicted",
+                f"{prediction:.4f}"
             )
 
-            if difference > 0:
-                st.caption("Prediction is above the actual value.")
-            elif difference < 0:
-                st.caption("Prediction is below the actual value.")
-            else:
-                st.caption("Prediction exactly matches the actual value.")
+        with b:
 
-    st.write("")
-
-    st.markdown(
-        '<div class="section-title">Model input signals</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Features supplied to the XGBoost prediction model.'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    feature_cols = st.columns(5)
-
-    for i, col in enumerate(feature_cols):
-        with col:
-            value = float(selected_features[0][i])
-
-            st.markdown(
-                f"""
-                <div class="feature-card">
-                    <div class="feature-number">0{i + 1}</div>
-                    <div class="feature-name">{feature_names[i]}</div>
-                    <div class="feature-value">{value:.4f}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            st.metric(
+                "Actual",
+                f"{actual:.4f}"
             )
 
-    st.write("")
-
-    with st.container(border=True):
-        st.subheader("AI forecast interpretation")
-
-        st.write(
-            f"The model predicts a traffic intensity of "
-            f"{prediction:.4f}, which corresponds to "
-            f"{classification} congestion."
+        st.metric(
+            "Absolute Error",
+            f"{abs(difference):.4f}"
         )
 
-        st.caption(
-            "The prediction is generated from the five engineered "
-            "traffic features shown above."
+        if difference > 0:
+
+            st.caption(
+                "Prediction is above the actual value."
+            )
+
+        elif difference < 0:
+
+            st.caption(
+                "Prediction is below the actual value."
+            )
+
+        else:
+
+            st.caption(
+                "Prediction exactly matches the actual value."
+            )
+
+    st.divider()
+
+    # ========================================================
+    # SELECTED LOCATION
+    # ========================================================
+
+    st.subheader(
+        "Selected Traffic Node"
+    )
+
+    location_col1, location_col2 = st.columns(2)
+
+    with location_col1:
+
+        st.metric(
+            "Node",
+            f"Node {node}"
         )
+
+    with location_col2:
+
+        st.metric(
+            "Observation",
+            f"#{observation}"
+        )
+
+    st.info(
+        f"📍 Traffic location selected: Node {node}"
+    )
+
+    st.divider()
+
+    # ========================================================
+    # MODEL INPUT SIGNALS
+    # ========================================================
+
+    st.subheader(
+        "Model Input Signals"
+    )
+
+    st.caption(
+        "Five engineered traffic features supplied "
+        "to the XGBoost model."
+    )
+
+    feature_col1, feature_col2, feature_col3, feature_col4, feature_col5 = st.columns(5)
+
+    with feature_col1:
+
+        st.metric(
+            "Last Traffic",
+            f"{features[0]:.4f}"
+        )
+
+    with feature_col2:
+
+        st.metric(
+            "Average Traffic",
+            f"{features[1]:.4f}"
+        )
+
+    with feature_col3:
+
+        st.metric(
+            "Maximum Traffic",
+            f"{features[2]:.4f}"
+        )
+
+    with feature_col4:
+
+        st.metric(
+            "Minimum Traffic",
+            f"{features[3]:.4f}"
+        )
+
+    with feature_col5:
+
+        st.metric(
+            "Traffic Variation",
+            f"{features[4]:.4f}"
+        )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # FEATURE TABLE
+    # --------------------------------------------------------
+
+    st.subheader(
+        "Detailed Model Inputs"
+    )
+
+    input_df = pd.DataFrame(
+        {
+            "Feature": feature_names,
+            "Value": [
+                round(
+                    float(value),
+                    4
+                )
+                for value in features
+            ],
+        }
+    )
+
+    st.dataframe(
+        input_df,
+        hide_index=True,
+        use_container_width=True,
+    )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # INTERPRETATION
+    # --------------------------------------------------------
+
+    st.subheader(
+        "AI Forecast Interpretation"
+    )
+
+    st.write(
+        f"The XGBoost model predicts a traffic "
+        f"intensity of **{prediction:.4f}** "
+        f"for **Node {node}** at "
+        f"**Observation #{observation}**."
+    )
+
+    st.write(
+        f"The predicted traffic level is classified "
+        f"as **{classification} congestion**."
+    )
 
 
 # ============================================================
@@ -692,229 +951,346 @@ elif page == "Traffic Forecast":
 elif page == "Analytics":
 
     st.markdown(
-        '<div class="page-title">Traffic Analytics</div>',
+        '<div class="page-title">'
+        'Traffic Analytics'
+        '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="page-description">'
-        'Explore congestion distribution, traffic statistics and model predictions.'
+        'Explore traffic distribution, statistics, '
+        'and prediction performance.'
         '</div>',
         unsafe_allow_html=True,
     )
 
+    # --------------------------------------------------------
+    # PREDICT ALL TEST DATA
+    # --------------------------------------------------------
+
+    flat_X_test = X_test_nodes.reshape(
+        -1,
+        5
+    )
+
+    predictions_flat = np.asarray(
+        model.predict(flat_X_test)
+    )
+
+    predictions_nodes = predictions_flat.reshape(
+        number_of_observations,
+        number_of_nodes
+    )
+
+    # --------------------------------------------------------
+    # CLASSIFICATION
+    # --------------------------------------------------------
+
     classes = [
-        classify_traffic(float(x))
-        for x in predictions
+        classify_traffic(float(value))
+        for value in predictions_flat
     ]
 
-    counts = pd.Series(classes).value_counts()
+    counts = pd.Series(
+        classes
+    ).value_counts()
 
-    low = int(counts.get("LOW", 0))
-    medium = int(counts.get("MEDIUM", 0))
-    high = int(counts.get("HIGH", 0))
-    total = low + medium + high
+    low = int(
+        counts.get(
+            "LOW",
+            0
+        )
+    )
+
+    medium = int(
+        counts.get(
+            "MEDIUM",
+            0
+        )
+    )
+
+    high = int(
+        counts.get(
+            "HIGH",
+            0
+        )
+    )
+
+    total = (
+        low +
+        medium +
+        high
+    )
+
+    # --------------------------------------------------------
+    # METRICS
+    # --------------------------------------------------------
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        st.metric("TOTAL", f"{total:,}")
+
+        st.metric(
+            "TOTAL",
+            f"{total:,}"
+        )
 
     with c2:
-        st.metric("LOW", f"{low:,}")
+
+        st.metric(
+            "LOW",
+            f"{low:,}"
+        )
 
     with c3:
-        st.metric("MEDIUM", f"{medium:,}")
+
+        st.metric(
+            "MEDIUM",
+            f"{medium:,}"
+        )
 
     with c4:
-        st.metric("HIGH", f"{high:,}")
 
-    st.write("")
+        st.metric(
+            "HIGH",
+            f"{high:,}"
+        )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # DISTRIBUTION
+    # --------------------------------------------------------
 
     left, right = st.columns(2)
 
     with left:
-        with st.container(border=True):
-            st.subheader("Congestion distribution")
 
-            donut_df = pd.DataFrame(
-                {
-                    "Level": ["LOW", "MEDIUM", "HIGH"],
-                    "Count": [low, medium, high],
-                }
-            )
-
-            donut = (
-                alt.Chart(donut_df)
-                .mark_arc(
-                    innerRadius=75,
-                    outerRadius=135,
-                )
-                .encode(
-                    theta="Count:Q",
-                    color=alt.Color(
-                        "Level:N",
-                        scale=alt.Scale(
-                            domain=["LOW", "MEDIUM", "HIGH"],
-                            range=["#45e0a3", "#ffcc66", "#ff5364"],
-                        ),
-                    ),
-                    tooltip=["Level", "Count"],
-                )
-                .properties(height=340)
-            )
-
-            st.altair_chart(
-                donut,
-                use_container_width=True,
-            )
-
-    with right:
-        with st.container(border=True):
-            st.subheader("Traffic statistics")
-
-            stats = pd.DataFrame(
-                {
-                    "Metric": [
-                        "Minimum traffic",
-                        "Maximum traffic",
-                        "Average traffic",
-                        "Median traffic",
-                        "Standard deviation",
-                    ],
-                    "Value": [
-                        float(np.min(y_test)),
-                        float(np.max(y_test)),
-                        float(np.mean(y_test)),
-                        float(np.median(y_test)),
-                        float(np.std(y_test)),
-                    ],
-                }
-            )
-
-            stats["Value"] = stats["Value"].round(4)
-
-            st.dataframe(
-                stats,
-                hide_index=True,
-                use_container_width=True,
-            )
-
-    st.write("")
-
-    st.markdown(
-        '<div class="section-title">Traffic trend</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Actual traffic intensity across test observations.'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    trend_size = min(500, len(y_test))
-
-    trend_df = pd.DataFrame(
-        {
-            "Observation": np.arange(1, trend_size + 1),
-            "Traffic": y_test[:trend_size],
-        }
-    )
-
-    trend_chart = (
-        alt.Chart(trend_df)
-        .mark_line()
-        .encode(
-            x=alt.X("Observation:Q", title="Observation"),
-            y=alt.Y("Traffic:Q", title="Traffic intensity"),
-            tooltip=[
-                "Observation",
-                alt.Tooltip("Traffic:Q", format=".4f"),
-            ],
+        st.subheader(
+            "Congestion Distribution"
         )
-        .properties(height=350)
-        .interactive()
-    )
 
-    with st.container(border=True):
+        donut_df = pd.DataFrame(
+            {
+                "Level": [
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH",
+                ],
+                "Count": [
+                    low,
+                    medium,
+                    high,
+                ],
+            }
+        )
+
+        donut = (
+            alt.Chart(donut_df)
+            .mark_arc(
+                innerRadius=70
+            )
+            .encode(
+                theta="Count:Q",
+                color="Level:N",
+                tooltip=[
+                    "Level",
+                    "Count"
+                ],
+            )
+            .properties(
+                height=350
+            )
+        )
+
         st.altair_chart(
-            trend_chart,
+            donut,
             use_container_width=True,
         )
 
-    st.write("")
+    # --------------------------------------------------------
+    # STATISTICS
+    # --------------------------------------------------------
 
-    st.markdown(
-        '<div class="section-title">Actual vs predicted</div>',
-        unsafe_allow_html=True,
+    with right:
+
+        st.subheader(
+            "Traffic Statistics"
+        )
+
+        stats = pd.DataFrame(
+            {
+                "Metric": [
+                    "Minimum",
+                    "Maximum",
+                    "Average",
+                    "Median",
+                    "Standard Deviation",
+                ],
+                "Value": [
+                    float(
+                        np.min(
+                            y_test_nodes
+                        )
+                    ),
+                    float(
+                        np.max(
+                            y_test_nodes
+                        )
+                    ),
+                    float(
+                        np.mean(
+                            y_test_nodes
+                        )
+                    ),
+                    float(
+                        np.median(
+                            y_test_nodes
+                        )
+                    ),
+                    float(
+                        np.std(
+                            y_test_nodes
+                        )
+                    ),
+                ],
+            }
+        )
+
+        stats["Value"] = (
+            stats["Value"]
+            .round(4)
+        )
+
+        st.dataframe(
+            stats,
+            hide_index=True,
+            use_container_width=True,
+        )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # TRAFFIC TREND
+    # --------------------------------------------------------
+
+    st.subheader(
+        "Traffic Trend"
     )
 
-    comparison_size = min(300, len(y_test))
+    trend_size = min(
+        500,
+        number_of_observations
+    )
 
-    comparison_df = pd.DataFrame(
+    actual_average = np.mean(
+        y_test_nodes[:trend_size],
+        axis=1
+    )
+
+    predicted_average = np.mean(
+        predictions_nodes[:trend_size],
+        axis=1
+    )
+
+    trend_df = pd.DataFrame(
         {
-            "Observation": np.arange(1, comparison_size + 1),
-            "Actual": y_test[:comparison_size],
-            "Predicted": predictions[:comparison_size],
+            "Observation": np.arange(
+                1,
+                trend_size + 1
+            ),
+            "Actual": actual_average,
+            "Predicted": predicted_average,
         }
     )
 
-    comparison_long = comparison_df.melt(
+    trend_long = trend_df.melt(
         id_vars="Observation",
-        value_vars=["Actual", "Predicted"],
+        value_vars=[
+            "Actual",
+            "Predicted",
+        ],
         var_name="Type",
         value_name="Traffic",
     )
 
-    comparison_chart = (
-        alt.Chart(comparison_long)
+    chart = (
+        alt.Chart(trend_long)
         .mark_line()
         .encode(
-            x=alt.X("Observation:Q", title="Observation"),
-            y=alt.Y("Traffic:Q", title="Traffic intensity"),
-            color=alt.Color(
-                "Type:N",
-                scale=alt.Scale(
-                    domain=["Actual", "Predicted"],
-                    range=["#ffffff", "#ff5364"],
-                ),
+            x=alt.X(
+                "Observation:Q",
+                title="Observation"
             ),
+            y=alt.Y(
+                "Traffic:Q",
+                title="Traffic Intensity"
+            ),
+            color="Type:N",
             tooltip=[
                 "Observation",
                 "Type",
-                alt.Tooltip("Traffic:Q", format=".4f"),
+                alt.Tooltip(
+                    "Traffic:Q",
+                    format=".4f"
+                ),
             ],
         )
-        .properties(height=360)
+        .properties(
+            height=400
+        )
         .interactive()
     )
 
-    with st.container(border=True):
-        st.altair_chart(
-            comparison_chart,
-            use_container_width=True,
-        )
+    st.altair_chart(
+        chart,
+        use_container_width=True,
+    )
 
-    st.write("")
+    st.divider()
 
-    average_traffic = float(np.mean(y_test))
-    max_traffic = float(np.max(y_test))
-    high_percentage = high / total * 100 if total else 0
+    # --------------------------------------------------------
+    # INSIGHT
+    # --------------------------------------------------------
 
-    with st.container(border=True):
-        st.subheader("Analytics insight")
+    average_traffic = float(
+        np.mean(y_test_nodes)
+    )
 
-        st.markdown(
-            f"""
-            **TrafficSense analyzed {total:,} test observations.**
+    max_traffic = float(
+        np.max(y_test_nodes)
+    )
 
-            - Average traffic intensity: **{average_traffic:.4f}**
-            - Peak traffic intensity: **{max_traffic:.4f}**
-            - High-congestion observations: **{high:,} ({high_percentage:.1f}%)**
-            """
-        )
+    high_percentage = (
+        high / total * 100
+        if total > 0
+        else 0
+    )
+
+    st.subheader(
+        "Analytics Insight"
+    )
+
+    st.write(
+        f"TrafficSense analyzed "
+        f"**{total:,} node observations**."
+    )
+
+    st.write(
+        f"Average traffic intensity: "
+        f"**{average_traffic:.4f}**"
+    )
+
+    st.write(
+        f"Peak traffic intensity: "
+        f"**{max_traffic:.4f}**"
+    )
+
+    st.write(
+        f"High-congestion observations: "
+        f"**{high:,} ({high_percentage:.1f}%)**"
+    )
 
 
 # ============================================================
@@ -924,377 +1300,398 @@ elif page == "Analytics":
 elif page == "Model Insights":
 
     st.markdown(
-        '<div class="page-title">Model Insights</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="page-description">'
-        'Understand model performance, feature importance and individual predictions.'
+        '<div class="page-title">'
+        'Model Insights'
         '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
-        '<div class="section-title">XGBoost performance</div>',
+        '<div class="page-description">'
+        'Understand model performance and feature importance.'
+        '</div>',
         unsafe_allow_html=True,
     )
+
+    # --------------------------------------------------------
+    # PERFORMANCE
+    # --------------------------------------------------------
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        st.metric("R² SCORE", "84.37%")
+
+        st.metric(
+            "R² SCORE",
+            "84.37%"
+        )
 
     with c2:
-        st.metric("RMSE", "0.0809")
+
+        st.metric(
+            "RMSE",
+            "0.0809"
+        )
 
     with c3:
-        st.metric("MAE", "0.0618")
+
+        st.metric(
+            "MAE",
+            "0.0618"
+        )
 
     with c4:
-        st.metric("TRAINING SAMPLES", f"{len(X_train):,}")
 
-    st.write("")
+        st.metric(
+            "TRAINING SAMPLES",
+            f"{len(y_train_nodes):,}"
+        )
 
-    st.markdown(
-        '<div class="section-title">Model comparison</div>',
-        unsafe_allow_html=True,
+    st.divider()
+
+    # --------------------------------------------------------
+    # MODEL COMPARISON
+    # --------------------------------------------------------
+
+    st.subheader(
+        "Model Comparison"
     )
 
-    model_comparison = pd.DataFrame(
+    comparison = pd.DataFrame(
         {
             "Model": [
                 "Linear Regression",
                 "Random Forest",
                 "XGBoost",
             ],
-            "R²": [0.7328, 0.8328, 0.8437],
-            "RMSE": [0.1057, 0.0836, 0.0809],
-            "MAE": [0.0766, 0.0602, 0.0618],
+            "R²": [
+                0.7328,
+                0.8328,
+                0.8437,
+            ],
+            "RMSE": [
+                0.1057,
+                0.0836,
+                0.0809,
+            ],
+            "MAE": [
+                0.0766,
+                0.0602,
+                0.0618,
+            ],
         }
     )
 
     st.dataframe(
-        model_comparison.style.format(
-            {
-                "R²": "{:.4f}",
-                "RMSE": "{:.4f}",
-                "MAE": "{:.4f}",
-            }
-        ),
+        comparison,
         hide_index=True,
         use_container_width=True,
     )
 
-    st.write("")
+    st.divider()
 
-    st.markdown(
-        '<div class="section-title">Feature importance</div>',
-        unsafe_allow_html=True,
+    # --------------------------------------------------------
+    # FEATURE IMPORTANCE
+    # --------------------------------------------------------
+
+    st.subheader(
+        "Feature Importance"
     )
 
-    importance_values = np.asarray(
+    importance = np.asarray(
         model.feature_importances_
     )
 
-    importance_df = pd.DataFrame(
-        {
-            "Feature": feature_names,
-            "Importance": importance_values,
-        }
-    ).sort_values(
-        "Importance",
-        ascending=False,
-    )
+    if len(importance) == 5:
 
-    importance_df["Importance"] *= 100
-
-    importance_chart = (
-        alt.Chart(importance_df)
-        .mark_bar(
-            cornerRadiusTopRight=6,
-            cornerRadiusBottomRight=6,
+        importance_df = pd.DataFrame(
+            {
+                "Feature": feature_names,
+                "Importance": importance,
+            }
         )
-        .encode(
-            x=alt.X(
-                "Importance:Q",
-                title="Importance (%)",
-            ),
-            y=alt.Y(
-                "Feature:N",
-                sort="-x",
-                title="",
-            ),
-            tooltip=[
-                alt.Tooltip("Feature:N"),
-                alt.Tooltip(
+
+        importance_df[
+            "Importance"
+        ] *= 100
+
+        importance_df = (
+            importance_df
+            .sort_values(
+                "Importance",
+                ascending=False
+            )
+        )
+
+        importance_chart = (
+            alt.Chart(
+                importance_df
+            )
+            .mark_bar()
+            .encode(
+                x=alt.X(
                     "Importance:Q",
-                    format=".2f",
+                    title="Importance (%)"
                 ),
-            ],
+                y=alt.Y(
+                    "Feature:N",
+                    sort="-x"
+                ),
+                tooltip=[
+                    "Feature",
+                    alt.Tooltip(
+                        "Importance:Q",
+                        format=".2f"
+                    ),
+                ],
+            )
+            .properties(
+                height=350
+            )
         )
-        .properties(height=300)
-    )
 
-    with st.container(border=True):
         st.altair_chart(
             importance_chart,
             use_container_width=True,
         )
 
-    st.write("")
+    else:
+
+        st.warning(
+            "The loaded model does not contain "
+            "five feature importance values."
+        )
+
+    st.divider()
 
     # --------------------------------------------------------
-    # SHAP EXPLAINABILITY
+    # SHAP
     # --------------------------------------------------------
 
-    st.markdown(
-        '<div class="section-title">Prediction explainability</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Understand how each traffic feature influences one individual prediction.'
-        '</div>',
-        unsafe_allow_html=True,
+    st.subheader(
+        "Prediction Explainability"
     )
 
     shap_observation = st.slider(
-        "Select observation to explain",
+        "Select Observation",
         min_value=1,
-        max_value=len(X_test),
+        max_value=number_of_observations,
         value=1,
         key="shap_observation",
     )
 
-    shap_index = shap_observation - 1
-    shap_input = X_test[shap_index].reshape(1, -1)
+    shap_node = st.selectbox(
+        "Select Node",
+        options=list(
+            range(
+                1,
+                number_of_nodes + 1
+            )
+        ),
+        format_func=lambda x:
+            f"Node {x}",
+        key="shap_node",
+    )
+
+    shap_features = X_test_nodes[
+        shap_observation - 1,
+        shap_node - 1
+    ].reshape(
+        1,
+        -1
+    )
 
     try:
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(shap_input)
 
-        if isinstance(shap_values, list):
+        explainer = shap.TreeExplainer(
+            model
+        )
+
+        shap_values = explainer.shap_values(
+            shap_features
+        )
+
+        if isinstance(
+            shap_values,
+            list
+        ):
+
             shap_values = shap_values[0]
 
-        shap_values = np.asarray(shap_values).flatten()
+        shap_values = np.asarray(
+            shap_values
+        ).flatten()
 
-        if len(shap_values) != len(feature_names):
+        if len(shap_values) != 5:
+
             st.warning(
-                "SHAP returned a different number of feature values "
-                "than the dashboard feature list."
+                "SHAP returned an unexpected "
+                "number of feature values."
             )
+
         else:
+
             shap_df = pd.DataFrame(
                 {
                     "Feature": feature_names,
                     "SHAP Value": shap_values,
-                    "Feature Value": shap_input[0],
+                    "Feature Value": shap_features[0],
                 }
             )
 
-            shap_df["Impact"] = np.where(
-                shap_df["SHAP Value"] >= 0,
-                "Increases prediction",
-                "Decreases prediction",
-            )
-
-            shap_df["Absolute Impact"] = shap_df[
+            shap_df[
+                "Absolute Impact"
+            ] = shap_df[
                 "SHAP Value"
             ].abs()
 
-            shap_df = shap_df.sort_values(
-                "Absolute Impact",
-                ascending=False,
+            shap_df = (
+                shap_df
+                .sort_values(
+                    "Absolute Impact",
+                    ascending=False
+                )
             )
 
             shap_prediction = float(
-                model.predict(shap_input)[0]
+                model.predict(
+                    shap_features
+                )[0]
             )
 
-            shap_classification = classify_traffic(
+            shap_class = classify_traffic(
                 shap_prediction
             )
 
-            s1, s2, s3 = st.columns(3)
+            st.metric(
+                "Predicted Traffic",
+                f"{shap_prediction:.4f}"
+            )
 
-            with s1:
-                st.metric(
-                    "PREDICTED TRAFFIC",
-                    f"{shap_prediction:.4f}",
+            st.info(
+                f"Node {shap_node} — "
+                f"{shap_class} congestion"
+            )
+
+            shap_chart = (
+                alt.Chart(
+                    shap_df
                 )
-
-            with s2:
-                st.metric(
-                    "CONGESTION",
-                    shap_classification,
-                )
-
-            with s3:
-                st.metric(
-                    "STRONGEST FEATURE",
-                    str(shap_df.iloc[0]["Feature"]),
-                )
-
-            st.write("")
-
-            with st.container(border=True):
-                st.subheader("Feature contribution")
-
-                shap_chart = (
-                    alt.Chart(shap_df)
-                    .mark_bar()
-                    .encode(
-                        x=alt.X(
-                            "SHAP Value:Q",
-                            title="Impact on prediction",
-                        ),
-                        y=alt.Y(
-                            "Feature:N",
-                            sort="-x",
-                            title="",
-                        ),
-                        color=alt.condition(
-                            "datum['SHAP Value'] >= 0",
-                            alt.value("#ff5364"),
-                            alt.value("#45e0a3"),
-                        ),
-                        tooltip=[
-                            alt.Tooltip(
-                                "Feature:N",
-                                title="Feature",
-                            ),
-                            alt.Tooltip(
-                                "Feature Value:Q",
-                                title="Feature value",
-                                format=".4f",
-                            ),
-                            alt.Tooltip(
-                                "SHAP Value:Q",
-                                title="SHAP impact",
-                                format=".4f",
-                            ),
-                            alt.Tooltip(
-                                "Impact:N",
-                                title="Effect",
-                            ),
-                        ],
-                    )
-                    .properties(height=320)
-                )
-
-                st.altair_chart(
-                    shap_chart,
-                    use_container_width=True,
-                )
-
-            st.write("")
-
-            with st.container(border=True):
-                st.subheader("Prediction breakdown")
-
-                display_df = shap_df[
-                    [
+                .mark_bar()
+                .encode(
+                    x=alt.X(
+                        "SHAP Value:Q",
+                        title="SHAP Impact"
+                    ),
+                    y=alt.Y(
+                        "Feature:N",
+                        sort="-x"
+                    ),
+                    color="Impact:N",
+                    tooltip=[
                         "Feature",
-                        "Feature Value",
-                        "SHAP Value",
-                        "Impact",
-                    ]
-                ].copy()
-
-                display_df["Feature Value"] = display_df[
-                    "Feature Value"
-                ].round(4)
-
-                display_df["SHAP Value"] = display_df[
-                    "SHAP Value"
-                ].round(4)
-
-                st.dataframe(
-                    display_df,
-                    hide_index=True,
-                    use_container_width=True,
+                        alt.Tooltip(
+                            "Feature Value:Q",
+                            format=".4f"
+                        ),
+                        alt.Tooltip(
+                            "SHAP Value:Q",
+                            format=".4f"
+                        ),
+                    ],
                 )
-
-            st.write("")
-
-            top_feature = shap_df.iloc[0]
-
-            with st.container(border=True):
-                st.subheader("AI explanation")
-
-                if float(top_feature["SHAP Value"]) >= 0:
-                    direction_text = "increases"
-                else:
-                    direction_text = "decreases"
-
-                st.markdown(
-                    f"""
-                    The model predicts a traffic intensity of
-                    **{shap_prediction:.4f}**, classified as
-                    **{shap_classification} congestion**.
-
-                    The strongest contributing feature is
-                    **{top_feature["Feature"]}**, with a value of
-                    **{float(top_feature["Feature Value"]):.4f}**.
-
-                    Based on its SHAP value, this feature
-                    **{direction_text}** the prediction by approximately
-                    **{abs(float(top_feature["SHAP Value"])):.4f}**
-                    relative to the model baseline.
+                .transform_calculate(
+                    Impact="""
+                    datum['SHAP Value'] >= 0
+                    ? 'Increases prediction'
+                    : 'Decreases prediction'
                     """
                 )
+                .properties(
+                    height=350
+                )
+            )
+
+            st.altair_chart(
+                shap_chart,
+                use_container_width=True,
+            )
+
+            display_df = shap_df[
+                [
+                    "Feature",
+                    "Feature Value",
+                    "SHAP Value",
+                ]
+            ].copy()
+
+            display_df[
+                "Feature Value"
+            ] = display_df[
+                "Feature Value"
+            ].round(4)
+
+            display_df[
+                "SHAP Value"
+            ] = display_df[
+                "SHAP Value"
+            ].round(4)
+
+            st.dataframe(
+                display_df,
+                hide_index=True,
+                use_container_width=True,
+            )
+
+            strongest = shap_df.iloc[0]
+
+            st.write(
+                f"The strongest contributing feature is "
+                f"**{strongest['Feature']}**."
+            )
 
     except Exception as exc:
-        st.error(
-            "SHAP explanation could not be generated for this model."
+
+        st.warning(
+            "SHAP explanation could not be generated."
         )
-        st.caption(str(exc))
 
-    st.write("")
+        st.caption(
+            str(exc)
+        )
 
-    st.markdown(
-        '<div class="section-title">How the model works</div>',
-        unsafe_allow_html=True,
+    st.divider()
+
+    # --------------------------------------------------------
+    # MODEL DESCRIPTION
+    # --------------------------------------------------------
+
+    st.subheader(
+        "How the Model Works"
     )
 
-    with st.container(border=True):
-        st.markdown(
-            """
-            **TrafficSense uses XGBoost Regression** to estimate
-            traffic intensity from engineered historical traffic features.
+    st.write(
+        "TrafficSense uses an XGBoost regression model "
+        "to estimate traffic intensity from engineered "
+        "historical traffic features."
+    )
 
-            The prediction is then converted into three operational
-            congestion levels:
+    st.write(
+        "The predicted intensity is converted into "
+        "three congestion levels:"
+    )
 
-            🟢 **LOW** — below 0.1971
+    st.write(
+        "🟢 LOW — below 0.1971"
+    )
 
-            🟡 **MEDIUM** — from 0.1971 to below 0.4040
+    st.write(
+        "🟡 MEDIUM — 0.1971 to below 0.4040"
+    )
 
-            🔴 **HIGH** — 0.4040 and above
-            """
-        )
-
-    st.write("")
-
-    with st.container(border=True):
-        st.subheader("Why XGBoost?")
-
-        st.markdown(
-            """
-            XGBoost achieved the strongest overall performance among
-            the evaluated models.
-
-            **R²:** 0.8437  
-            **RMSE:** 0.0809  
-            **MAE:** 0.0618
-
-            This indicates that the model captures a substantial
-            portion of the variation in traffic intensity while
-            maintaining relatively low prediction error.
-            """
-        )
+    st.write(
+        "🔴 HIGH — 0.4040 and above"
+    )
 
 
 # ============================================================
@@ -1304,137 +1701,153 @@ elif page == "Model Insights":
 elif page == "About":
 
     st.markdown(
-        '<div class="page-title">About TrafficSense</div>',
+        '<div class="page-title">'
+        'About TrafficSense'
+        '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="page-description">'
-        'An AI-powered traffic intelligence system for forecasting traffic intensity '
-        'and identifying congestion levels.'
+        'AI-powered traffic forecasting and congestion analysis.'
         '</div>',
         unsafe_allow_html=True,
     )
 
-    with st.container(border=True):
-        st.subheader("TrafficSense")
+    st.subheader(
+        "TrafficSense"
+    )
 
-        st.markdown(
-            """
-            **TrafficSense** is a machine-learning-based traffic
-            forecasting system designed to transform historical
-            traffic observations into understandable congestion insights.
+    st.write(
+        "TrafficSense is a machine-learning-based "
+        "traffic forecasting system designed to "
+        "transform historical traffic observations "
+        "into understandable congestion insights."
+    )
 
-            The system uses engineered traffic features and an
-            **XGBoost regression model** to predict traffic intensity.
+    st.write(
+        "The system uses engineered traffic features "
+        "and an XGBoost regression model to predict "
+        "traffic intensity."
+    )
 
-            Predictions are then classified into:
+    st.divider()
 
-            🟢 **LOW** — relatively clear traffic
-
-            🟡 **MEDIUM** — moderate congestion
-
-            🔴 **HIGH** — heavy congestion
-            """
-        )
-
-    st.write("")
-
-    st.markdown(
-        '<div class="section-title">Technology stack</div>',
-        unsafe_allow_html=True,
+    st.subheader(
+        "Technology Stack"
     )
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        st.metric("LANGUAGE", "Python")
+
+        st.metric(
+            "LANGUAGE",
+            "Python"
+        )
 
     with c2:
-        st.metric("ML MODEL", "XGBoost")
+
+        st.metric(
+            "ML MODEL",
+            "XGBoost"
+        )
 
     with c3:
-        st.metric("DASHBOARD", "Streamlit")
+
+        st.metric(
+            "DASHBOARD",
+            "Streamlit"
+        )
 
     with c4:
-        st.metric("DATA", "NumPy / Pandas")
 
-    st.write("")
+        st.metric(
+            "DATA",
+            "NumPy / Pandas"
+        )
 
-    st.markdown(
-        '<div class="section-title">Prediction pipeline</div>',
-        unsafe_allow_html=True,
+    st.divider()
+
+    st.subheader(
+        "Prediction Pipeline"
     )
 
     steps = [
         (
             "01",
-            "Historical traffic data",
+            "Historical Traffic Data",
             "Traffic observations are loaded from the dataset.",
         ),
         (
             "02",
-            "Feature engineering",
-            "Historical observations are transformed into predictive features.",
+            "Feature Engineering",
+            "Historical traffic is converted into five predictive features.",
         ),
         (
             "03",
-            "XGBoost prediction",
+            "XGBoost Prediction",
             "The trained model estimates traffic intensity.",
         ),
         (
             "04",
-            "Congestion classification",
+            "Congestion Classification",
             "Predictions are converted into LOW, MEDIUM or HIGH.",
         ),
         (
             "05",
-            "Dashboard insights",
-            "Results are presented through the interactive dashboard.",
+            "Dashboard Insights",
+            "Results are displayed through the interactive dashboard.",
         ),
     ]
 
     for number, title, description in steps:
-        with st.container(border=True):
-            col1, col2 = st.columns([0.12, 0.88])
 
-            with col1:
-                st.markdown(f"### {number}")
+        st.markdown(
+            f"### {number}. {title}"
+        )
 
-            with col2:
-                st.markdown(f"**{title}**")
-                st.caption(description)
+        st.caption(
+            description
+        )
 
-    st.write("")
+    st.divider()
 
-    st.markdown(
-        '<div class="section-title">Project metrics</div>',
-        unsafe_allow_html=True,
+    st.subheader(
+        "Project Metrics"
     )
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.metric("TRAINING SAMPLES", f"{len(X_train):,}")
+
+        st.metric(
+            "TRAINING OBSERVATIONS",
+            f"{len(y_train_nodes):,}"
+        )
 
     with c2:
-        st.metric("TEST SAMPLES", f"{len(X_test):,}")
+
+        st.metric(
+            "TEST OBSERVATIONS",
+            f"{len(y_test_nodes):,}"
+        )
 
     with c3:
-        st.metric("MODEL R²", "84.37%")
+
+        st.metric(
+            "TRAFFIC NODES",
+            "36"
+        )
 
 
 # ============================================================
 # FOOTER
 # ============================================================
 
-st.markdown(
-    """
-    <div class="footer-custom">
-        <b>TrafficSense</b><br>
-        AI Traffic Intelligence<br><br>
-        Built with Python · XGBoost · Streamlit · Machine Learning
-    </div>
-    """,
-    unsafe_allow_html=True,
+st.divider()
+
+st.caption(
+    "TrafficSense • AI Traffic Intelligence • "
+    "Python • XGBoost • Streamlit"
 )
